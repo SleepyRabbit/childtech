@@ -1,7 +1,16 @@
 <template>
   <div>
-    <!-- <button @click="onSelect">选择图片</button> -->
-    <button @tap="onSelect">选择图片</button>
+    <div class="photo_container" v-if="imgFilePaths">
+      <image class="hasphoto" :src="imgFilePaths" @tap="onSelect"></image>
+    </div>
+    <div class="photo_container" v-else>
+      <image class="nophoto" src="/static/images/photo.png" @tap="onSelect"></image>
+    </div>
+    <button :disabled="disabled" @tap="onIdentification">开始识别</button>
+    <loading v-if="isDetecting">正在识别...</loading>
+    <div v-for="(item, index) in recognition_result" :key="index">
+      <label for="">{{item.name}}</label>
+    </div>
   </div>
 </template>
 
@@ -16,7 +25,12 @@ let option = {
 export default {
   data () {
     return {
-      imgFilePaths: []
+      access_token: "",
+      imgFilePaths: "",
+      imgBase64: "",
+      isDetecting: false,
+      disabled: true,
+      recognition_result: []
     }
   },
   onLoad() {
@@ -32,7 +46,7 @@ export default {
       let res = await request.fetchData(url, null, opt);
       // console.log("Res ", res);
       if(res && res.access_token) {
-        this.token = res.access_token;
+        this.access_token = res.access_token;
         // console.log("has token: ", this.token)
         console.log("get access_token successful!");
       } else {
@@ -41,10 +55,27 @@ export default {
     },
     onSelect() {
       wx.chooseImage({
-        count: '9', //最多可以选择的图片张数,
+        count: '1', //最多可以选择的图片张数,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
         success: res => {
+          this.disabled = true;
           this.imgFilePaths = res.tempFilePaths;
-          console.log("this.imgFilePaths: ", this.imgFilePaths);
+          // console.log("this.imgFilePaths: ", this.imgFilePaths);
+          // 将用户选择的图片转成base64
+          wx.request({
+            url: this.imgFilePaths[0],
+            method: 'GET',
+            responseType: 'arraybuffer', 
+            success: res => {
+              this.imgBase64 = wx.arrayBufferToBase64(res.data);
+              // console.log("this.imgBase64 : ", this.imgBase64 );
+              this.disabled = false;
+            },
+            fail: () => {
+              console.log("failed");
+            }
+          })
         }, //返回图片的本地文件路径列表 tempFilePaths,
         fail: () => {
           console.log("failed");
@@ -53,6 +84,32 @@ export default {
           console.log('commplete');
         }
       });
+    },
+    async uploadFile() {
+      let url_param = `/plant?access_token=${this.access_token}`;
+      let url = "https://aip.baidubce.com/rest/2.0/image-classify/v1" + url_param;
+      let opt = {
+        // contentType: "application/json;charset=UTF-8"
+      }
+      let data = {
+        image_type: 'BASE64',
+        image: this.imgBase64,
+        group_id_list : "gropu001",
+        user_id: "001",
+      }
+      let res = await request.fetchData(url, data, opt);
+      this.isDetecting = false;
+      if(res && res.error_code) {
+        console.log("err code:", res.error_code, "\nerr msg:", res.error_msg)
+      }
+      else {
+        // console.log("ai response data: ", res);
+        this.recognition_result = res.result;
+      }
+    },
+    async onIdentification() {
+      this.isDetecting = true;
+      await this.uploadFile();
     }
   },
 
@@ -63,54 +120,19 @@ export default {
 </script>
 
 <style scoped>
-.userinfo {
+.photo_container {
+  width: 100%;
+  height: 100vw;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
 }
-
-.userinfo-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
+.hasphoto {
+  width: 100%;
+  height: 100vw;
 }
-
-.userinfo-nickname {
-  color: #aaa;
-}
-
-.usermotto {
-  margin-top: 150px;
-}
-
-.form-control {
-  display: block;
-  padding: 0 12px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
-}
-.all{
-  width:7.5rem;
-  height:1rem;
-  background-color:blue;
-}
-.all:after{
-  display:block;
-  content:'';
-  clear:both;
-}
-.left{
-  float:left;
-  width:3rem;
-  height:1rem;
-  background-color:red;
-}
-
-.right{
-  float:left;
-  width:4.5rem;
-  height:1rem;
-  background-color:green;
+.nophoto {
+  width: 40%;
+  height: 40vw;
 }
 </style>

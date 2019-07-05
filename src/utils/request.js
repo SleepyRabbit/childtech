@@ -1,7 +1,7 @@
 import Fly from 'flyio';
 
 const fly = new Fly();
-const TIMEOUT = 1000;
+const TIMEOUT = 15000;
 const request = {
   async fetchData(url, data, opt = {}) {
     opt = opt || {};
