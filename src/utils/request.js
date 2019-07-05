@@ -1,5 +1,6 @@
-import fly from 'flyio';
+import Fly from 'flyio';
 
+const fly = new Fly();
 const TIMEOUT = 1000;
 const request = {
   async fetchData(url, data, opt = {}) {
@@ -37,13 +38,11 @@ const request = {
    */
   async fetchDataString(url) {
     try {
-          console.log("try: ", url)
           let response = await fly.request(url, null, {
               method: 'get',
               timeout: TIMEOUT, // 超时设置
               parseJson: true,
           });
-          console.log("response: ", response);
           return response.data;
         } catch (e) {
           throw e

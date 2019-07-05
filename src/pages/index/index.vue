@@ -24,7 +24,6 @@ export default {
   },
   methods: {
     async getToken() {
-      console.log("getToken called!");
       let url_param = `?grant_type=client_credentials&client_id=${option.client_id}&client_secret=${option.client_secret}`
       let url = "https://aip.baidubce.com/oauth/2.0/token" + url_param;
       let opt = {
@@ -41,7 +40,6 @@ export default {
       }
     },
     onSelect() {
-      console.log("onSelect called!");
       wx.chooseImage({
         count: '9', //最多可以选择的图片张数,
         success: res => {
