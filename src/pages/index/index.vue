@@ -63,19 +63,8 @@ export default {
           this.imgFilePaths = res.tempFilePaths;
           // console.log("this.imgFilePaths: ", this.imgFilePaths);
           // 将用户选择的图片转成base64
-          wx.request({
-            url: this.imgFilePaths[0],
-            method: 'GET',
-            responseType: 'arraybuffer', 
-            success: res => {
-              this.imgBase64 = wx.arrayBufferToBase64(res.data);
-              // console.log("this.imgBase64 : ", this.imgBase64 );
-              this.disabled = false;
-            },
-            fail: () => {
-              console.log("failed");
-            }
-          })
+          this.imgBase64 = wx.getFileSystemManager().readFileSync(res.tempFilePaths[0], "base64");
+          this.disabled = false;
         }, //返回图片的本地文件路径列表 tempFilePaths,
         fail: () => {
           console.log("failed");
@@ -122,7 +111,7 @@ export default {
 <style scoped>
 .photo_container {
   width: 100%;
-  height: 100vw;
+  height: 133vw;
   display: flex;
   justify-content: center;
   align-items: center;
