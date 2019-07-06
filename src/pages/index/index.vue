@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="photo_container" v-if="imgFilePaths">
-      <image class="hasphoto" :src="imgFilePaths" @tap="onSelect"></image>
+    <div v-if="imgFilePaths" class="photo_container" @tap="onSelect">
+      <image class="hasphoto" :src="imgFilePaths" mode="aspectFit"></image>
     </div>
-    <div class="photo_container" v-else>
-      <image class="nophoto" src="/static/images/photo.png" @tap="onSelect"></image>
+    <div v-else class="photo_container" @tap="onSelect">
+      <image class="nophoto" src="/static/images/photo.png"></image>
     </div>
     <button :disabled="disabled" @tap="onIdentification">开始识别</button>
     <loading v-if="isDetecting">正在识别...</loading>
@@ -86,16 +86,16 @@ export default {
       });
     },
     async uploadFile() {
-      let url_param = `/plant?access_token=${this.access_token}`;
-      let url = "https://aip.baidubce.com/rest/2.0/image-classify/v1" + url_param;
+      let url_param = `/handwriting?access_token=${this.access_token}`;
+      let url = "https://aip.baidubce.com/rest/2.0/ocr/v1" + url_param;
       let opt = {
         // contentType: "application/json;charset=UTF-8"
       }
       let data = {
         image_type: 'BASE64',
         image: this.imgBase64,
-        group_id_list : "gropu001",
-        user_id: "001",
+        // group_id_list : "gropu001",
+        // user_id: "001",
       }
       let res = await request.fetchData(url, data, opt);
       this.isDetecting = false;
@@ -103,7 +103,7 @@ export default {
         console.log("err code:", res.error_code, "\nerr msg:", res.error_msg)
       }
       else {
-        // console.log("ai response data: ", res);
+        console.log("ai response data: ", res);
         this.recognition_result = res.result;
       }
     },
@@ -128,8 +128,12 @@ export default {
   align-items: center;
 }
 .hasphoto {
+  background-color: black;
   width: 100%;
-  height: 100vw;
+  height: 100%;
+  /* object-fit: contain; */
+  /* max-width: 100%;
+  max-height: 100%; */
 }
 .nophoto {
   width: 40%;
