@@ -1,6 +1,16 @@
 <template>
-  <div>
-    <button @tap="onRecognize">开始识别</button>
+  <div class="page-root">
+    <div v-if="imgFilePaths" class="photo_container" @tap="onSelect">
+      <image class="hasphoto" :src="imgFilePaths" mode="aspectFit"></image>
+    </div>
+    <div v-else class="photo_container" @tap="onSelect">
+      <image class="nophoto" src="/static/images/photo.png"></image>
+    </div>
+    <button :disabled="disabled" @tap="onIdentification">开始识别</button>
+    <loading v-if="isDetecting">正在识别...</loading>
+    <div v-for="(item, index) in recognition_result" :key="index">
+      <label for="">{{item.name}}</label>
+    </div>
   </div>
 </template>
 
@@ -27,11 +37,6 @@ export default {
     this.getToken();
   },
   methods: {
-    onRecognize() {
-      wx.navigateTo({ 
-        url: '/pages/recognize/main' 
-      });
-    },
     async getToken() {
       let url_param = `?grant_type=client_credentials&client_id=${option.client_id}&client_secret=${option.client_secret}`
       let url = "https://aip.baidubce.com/oauth/2.0/token" + url_param;
@@ -104,6 +109,10 @@ export default {
 </script>
 
 <style scoped>
+.page-root {
+  width: 100%;
+  height: 100%;
+}
 .photo_container {
   width: 100%;
   height: 133vw;
