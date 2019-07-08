@@ -34,6 +34,9 @@ export default {
     }
   },
   onLoad() {
+    wx.setNavigationBarTitle({
+      title: '智能识别',
+    })
     this.getToken();
   },
   methods: {

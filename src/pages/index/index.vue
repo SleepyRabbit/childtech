@@ -1,102 +1,35 @@
 <template>
   <div>
-    <button @tap="onRecognize">开始识别</button>
+    <button @tap="addDevice">添加设备</button>
+    <button @tap="onRecognize">智能识别</button>
   </div>
 </template>
 
 <script>
-import request from "@/utils/request";
-
-let option = {
-  client_id: "9yo34fa44h5pXhhsfbuzllBe",
-  client_secret: "tZTEmxMTbBHZkyHKNBGERIoBfw9V20Ig",
-}
+// import request from "@/utils/request";
 
 export default {
   data () {
     return {
-      access_token: "",
-      imgFilePaths: "",
-      imgBase64: "",
-      isDetecting: false,
-      disabled: true,
-      recognition_result: []
     }
   },
   onLoad() {
-    this.getToken();
+    wx.setNavigationBarTitle({
+      title: '首页',
+    })
   },
   methods: {
+    addDevice() {
+      wx.navigateTo({ 
+        url: '/pages/addDevice/main' 
+      });
+    },
     onRecognize() {
       wx.navigateTo({ 
         url: '/pages/recognize/main' 
       });
     },
-    async getToken() {
-      let url_param = `?grant_type=client_credentials&client_id=${option.client_id}&client_secret=${option.client_secret}`
-      let url = "https://aip.baidubce.com/oauth/2.0/token" + url_param;
-      let opt = {
-        contentType: "application/json"
-      }
-      let res = await request.fetchData(url, null, opt);
-      // console.log("Res ", res);
-      if(res && res.access_token) {
-        this.access_token = res.access_token;
-        // console.log("has token: ", this.token)
-        console.log("get access_token successful!");
-      } else {
-        console.log("has no access_token!");
-      }
-    },
-    onSelect() {
-      wx.chooseImage({
-        count: '1', //最多可以选择的图片张数,
-        sizeType: ['original', 'compressed'],
-        sourceType: ['album', 'camera'],
-        success: res => {
-          this.disabled = true;
-          this.imgFilePaths = res.tempFilePaths;
-          // console.log("this.imgFilePaths: ", this.imgFilePaths);
-          // 将用户选择的图片转成base64
-          this.imgBase64 = wx.getFileSystemManager().readFileSync(res.tempFilePaths[0], "base64");
-          this.disabled = false;
-        }, //返回图片的本地文件路径列表 tempFilePaths,
-        fail: () => {
-          console.log("failed");
-        },
-        complete: () => {
-          console.log('commplete');
-        }
-      });
-    },
-    async uploadFile() {
-      let url_param = `/handwriting?access_token=${this.access_token}`;
-      let url = "https://aip.baidubce.com/rest/2.0/ocr/v1" + url_param;
-      let opt = {
-        // contentType: "application/json;charset=UTF-8"
-      }
-      let data = {
-        image_type: 'BASE64',
-        image: this.imgBase64,
-        // group_id_list : "gropu001",
-        // user_id: "001",
-      }
-      let res = await request.fetchData(url, data, opt);
-      this.isDetecting = false;
-      if(res && res.error_code) {
-        console.log("err code:", res.error_code, "\nerr msg:", res.error_msg)
-      }
-      else {
-        console.log("ai response data: ", res);
-        this.recognition_result = res.result;
-      }
-    },
-    async onIdentification() {
-      this.isDetecting = true;
-      await this.uploadFile();
-    }
   },
-
   created () {
     // let app = getApp()
   }
@@ -104,23 +37,4 @@ export default {
 </script>
 
 <style scoped>
-.photo_container {
-  width: 100%;
-  height: 133vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.hasphoto {
-  background-color: black;
-  width: 100%;
-  height: 100%;
-  /* object-fit: contain; */
-  /* max-width: 100%;
-  max-height: 100%; */
-}
-.nophoto {
-  width: 40%;
-  height: 40vw;
-}
 </style>

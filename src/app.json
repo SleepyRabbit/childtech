@@ -3,7 +3,8 @@
     "pages/index/main",
     "pages/logs/main",
     "pages/counter/main",
-    "pages/recognize/main"
+    "pages/recognize/main",
+    "pages/addDevice/main"
   ],
   "window": {
     "backgroundTextStyle": "light",
