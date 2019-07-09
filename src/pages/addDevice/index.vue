@@ -1,13 +1,15 @@
 <template>
   <div class="page-root">
     <loading v-if="isScaning">正在扫描蓝牙设备...</loading>
-    <div class="device-container">
-      <div v-for="(device,index) in devices" :key="index" class="device_card">
+    <loading v-if="isConnecting">正在连接...</loading>
+    <scroll-view class="device-container" scroll-y="true" scroll-with-animation="true" :style="{height: svHeight + 'px'}">
+      <div v-for="(device,index) in devices" :key="index" class="device_card" :style="{ backgroundColor: index === sel_index ? '#ccc' : 'white' }" @tap="onSelect(index)">
         <div>{{device.name}}</div>
         <div>{{device.deviceId}}</div>
         <div>{{device.RSSI}}</div>
       </div>
-    </div>
+    </scroll-view>
+    <button :disabled="sel_index < 0" class="connect" @tap="onConnect">连接</button>
   </div>
 </template>
 
@@ -26,19 +28,36 @@ export default {
         {
           name: "sss",
           deviceId: "123",
-          RSSI: "-33",
+          RSSI: "-32",
         },
       ],
+      sel_index: -1,
       isScaning: true,
+      isConnecting: false,
+      svHeight:0,
     }
   },
   onLoad() {
     wx.setNavigationBarTitle({
-      title: '添加设备',
+      // title: '添加设备',
+      title: '添加',
     })
     this.openBluetoothAdapter();
   },
+  mounted(){
+    let screenHeight = wx.getSystemInfoSync().windowHeight;
+    this.svHeight = screenHeight - 49;
+  },
   methods: {
+    onSelect(index) {
+      console.log("onSelect: ", index);
+      this.sel_index = index;
+    },
+    onConnect() {
+      let device = this.devices[this.sel_index];
+      console.log("onConnect: ", device);
+      this.connectDevice(device.deviceId)
+    },
     openBluetoothAdapter() {
       if(wx.openBluetoothAdapter) {
         console.log("wx.openBluetoothAdapter true!");
@@ -104,18 +123,18 @@ export default {
             if (res.devices.length > 0) {
               console.log("res.devices.length > 0:", res.devices);
               this.devices = res.devices;
-              if (JSON.stringify(res.devices).indexOf(this.deviceName) !== -1) {
-                for (let i = 0; i < res.devices.length; i++) {
-                  if (this.deviceName === res.devices[i].name) {
-                    /* 根据指定的蓝牙设备名称匹配到deviceId */
-                    this.deviceId = this.devices[i].deviceId;
-                    setTimeout(() => {
-                      // this.connectTO();
-                    }, 2000);
-                  };
-                };
-              } else {
-              }
+              // if (JSON.stringify(res.devices).indexOf(this.deviceName) !== -1) {
+              //   for (let i = 0; i < res.devices.length; i++) {
+              //     if (this.deviceName === res.devices[i].name) {
+              //       /* 根据指定的蓝牙设备名称匹配到deviceId */
+              //       this.deviceId = this.devices[i].deviceId;
+              //       setTimeout(() => {
+              //         // this.connectTO();
+              //       }, 2000);
+              //     };
+              //   };
+              // } else {
+              // }
             } else {
             }
           },
@@ -127,6 +146,31 @@ export default {
         })
       }, 2000)
     },
+    connectDevice(deviceId) {
+      console.log("connecting: ", deviceId);
+      this.isConnecting = true;
+      wx.createBLEConnection({
+        deviceId: deviceId,
+        success: res => {
+          this.isConnecting = false;
+          console.log("Connect device successful!")
+          // this.connectedDeviceId = deviceId;
+          /* 4.获取连接设备的service服务 */
+          // that.getBLEDeviceServices();
+          // wx.stopBluetoothDevicesDiscovery({
+          //   success: res => {
+          //     console.log(res, '停止搜索')
+          //   },
+          //   fail: res => {
+          //   }
+          // })
+        },
+        fail: res => {
+          this.isConnecting = false;
+          console.log("Connect device failed!")
+        }
+      })
+    }
   },
   created () {
   }
@@ -149,11 +193,24 @@ export default {
   border-radius: 5px;
   width: 94%;
   margin-left: 3%;
-  height: 140px;
+  height: 110px;
   /* margin-top: 10px; */
   margin-bottom: 10px;
   background-color: #FFFFFF;
   box-shadow: 0 2px 4px 0 rgba(0,0,0,0.08);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-Content: space-around;
+}
+.connect {
+  position:fixed;
+  bottom:0;
+  background: #FFFFFF;
+  height:49px;
+  width:100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
