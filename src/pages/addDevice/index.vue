@@ -150,14 +150,19 @@ export default {
             return
           }
           console.log("onBluetoothDeviceFound: ", res.devices);
-          let index = this.devices.indexOf(device);
-          console.log("index: ", index);
-          if(index > -1) {
-            console.log("index > -1: ", this.devices[index]);
-            console.log("index > -1: ", device);
-            this.devices[index] = device;
-          } else {
+          let isExist = false;
+          let cnt = -1;
+          this.devices.forEach((item, index) => {
+            if(item.deviceId === device.deviceId) {
+              cnt = index;
+              isExist = true;
+            }
+          })
+          if(!isExist) {
             this.devices.push(device);
+          } else {
+            // 直接给this.devices[cnt]赋值不会触发v-for刷新
+            this.devices.splice(cnt, 1, device)
           }
         })
       })
