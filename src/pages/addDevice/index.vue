@@ -21,18 +21,7 @@ const LAST_CONNECTED_DEVICE = 'last_connected_device'
 export default {
   data () {
     return {
-      devices: [
-        // {
-        //   name: "sss",
-        //   deviceId: "123",
-        //   RSSI: "-33",
-        // },
-        // {
-        //   name: "sss",
-        //   deviceId: "123",
-        //   RSSI: "-32",
-        // },
-      ],
+      devices: [],
       deviceId: "",
       sel_index: -1,
       isScaning: true,
@@ -49,11 +38,12 @@ export default {
   },
   onUnload() {
     console.log("onUnload!")
-    this.devices = [];
     this.closeBluetoothAdapter();
   },
   onShow() {
     console.log("onshow devices: ", this.devices);
+    this.devices = [];
+    this.sel_index = -1;
     this.openBluetoothAdapter();
   },
   mounted(){
