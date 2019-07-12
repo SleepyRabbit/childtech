@@ -1,7 +1,9 @@
 <template>
   <div>
-    <button @tap="addDevice">添加设备</button>
-    <button @tap="onRecognize">智能识别</button>
+    <!-- <button @tap="addDevice">添加设备</button>
+    <button @tap="onRecognize">智能识别</button> -->
+    <button @tap="addDevice">1</button>
+    <button @tap="onRecognize">2</button>
   </div>
 </template>
 

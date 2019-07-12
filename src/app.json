@@ -4,7 +4,8 @@
     "pages/logs/main",
     "pages/counter/main",
     "pages/recognize/main",
-    "pages/addDevice/main"
+    "pages/addDevice/main",
+    "pages/addDevice1/main"
   ],
   "window": {
     "backgroundTextStyle": "light",
