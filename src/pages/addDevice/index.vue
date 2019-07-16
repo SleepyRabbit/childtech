@@ -6,8 +6,9 @@
     <scroll-view class="device-container" scroll-y="true" scroll-with-animation="true" :style="{height: svHeight + 'px'}">
       <div v-for="(device,index) in devices" :key="index" class="device_card" :style="{ backgroundColor: index === sel_index ? '#ccc' : 'white' }" @tap="onSelect(index)">
         <div>{{device.name}}</div>
-        <div>{{device.deviceId}}</div>
+        <!-- <div>{{device.deviceId}}</div> -->
         <div>{{device.RSSI}}</div>
+        <div v-if="connectedDevice === device.deviceId">已连接</div>
       </div>
     </scroll-view>
     <button :disabled="sel_index < 0" class="connect" @tap="onConnect">连接</button>
@@ -25,7 +26,7 @@ export default {
     return {
       msg: "正在扫描蓝牙设备...",
       devices: [],
-      deviceId: "",
+      connectedDevice: "",
       sel_index: -1,
       isScaning: true,
       isConnecting: false,
@@ -219,7 +220,7 @@ export default {
         allowDuplicatesKey: false,
         interval: 0,
         success: (res) => {
-          // console.log("getBluetoothDevices successful!", res);
+          console.log("getBluetoothDevices successful!", res);
           res.devices.forEach((device, index) => {
             if (!device.name && !device.localName) {
               return;
@@ -228,6 +229,9 @@ export default {
               return;
             }
             console.log("getBluetoothDevices: ", device, index);
+            if(device.RSSI === 0) {
+              return;
+            }
             let isExist = false;
             let cnt = -1;
             this.devices.forEach((item, index) => {
@@ -261,6 +265,9 @@ export default {
             return;
           }
           console.log("onBluetoothDeviceFound: ", res.devices);
+          if(device.RSSI == 0) {
+            return;
+          }
           let isExist = false;
           let cnt = -1;
           this.devices.forEach((item, index) => {
@@ -288,7 +295,7 @@ export default {
           console.log('createBLEConnection success!', res);
           widget.showToast("蓝牙连接成功!");
           this.connected = true;
-          this.deviceId = deviceId;
+          this.connectedDevice = deviceId;
           setTimeout(() => {
             this.getConnectedBluetoothDevices();
             this.getBLEDeviceServices(deviceId);
