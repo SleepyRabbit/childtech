@@ -16,6 +16,7 @@
 
 <script>
 import widget from '@/utils/widget'
+import { mapActions, mapGetters } from 'vuex'
 
 const LAST_CONNECTED_DEVICE = 'last_connected_device'
 
@@ -30,6 +31,7 @@ export default {
       isConnecting: false,
       svHeight: 0,
       connected: false,
+      timer: null,
     }
   },
   onLoad() {
@@ -39,19 +41,37 @@ export default {
     })
   },
   onUnload() {
-    console.log("onUnload!")
-    this.closeBluetoothAdapter();
+    console.log("onUnload!");
+    this.stopBluetoothDevicesDiscovery();
   },
   onShow() {
     console.log("onshow devices: ", this.devices);
     this.init();
-    this.openBluetoothAdapter();
+    console.log("this.getAdapterState: ", this.getAdapterState);
+    // this.openBluetoothAdapter();
+    if(!this.getAdapterState) {
+      this.openBluetoothAdapter();
+    }
+    else {
+      /* 获取本机的蓝牙状态 */
+      setTimeout(() => {
+        this.getBluetoothAdapterState()
+      }, 100)
+    }
   },
   mounted(){
     let screenHeight = wx.getSystemInfoSync().windowHeight;
     this.svHeight = screenHeight - 49;
   },
+  computed: {
+    ...mapGetters([
+      'getAdapterState',
+    ]),
+  },
   methods: {
+    ...mapActions([
+      'setAdapterState',
+    ]),
     init() {
       this.devices = [];
       this.sel_index = -1;
@@ -79,7 +99,7 @@ export default {
       wx.openBluetoothAdapter({
         success: (res) => {
           console.log('openBluetoothAdapter success', res);
-          this.msg = "蓝牙适配器初始化成功!";
+          this.setAdapterState(true);
           /* 获取本机的蓝牙状态 */
           setTimeout(() => {
             this.getBluetoothAdapterState()
@@ -126,7 +146,7 @@ export default {
       this.msg = "正在检查蓝牙适配器状态...";
       wx.getBluetoothAdapterState({
         success: (res) => {
-          this.msg = "检查蓝牙适配器状态成功!";
+          console.log("res: ", res);
           let available = res.available;
           let discovering = res.discovering;
           if (!res.available) {
@@ -134,7 +154,8 @@ export default {
           }
           else {
             if (res.discovering) {
-              this.onBluetoothDeviceFound();
+              this.scanDevices();
+              // this.onBluetoothDeviceFound();
             } else {
               this.startBluetoothDevicesDiscovery();
               this.getConnectedBluetoothDevices();
@@ -163,8 +184,8 @@ export default {
         wx.startBluetoothDevicesDiscovery({
           success: (res) => {
             console.log('startBluetoothDevicesDiscovery success', res);
-            // this.getBluetoothDevices();
-            this.onBluetoothDeviceFound();
+            this.scanDevices();
+            // this.onBluetoothDeviceFound();
           },
           fail: (res) => {
             this.isScaning = false;
@@ -174,6 +195,9 @@ export default {
       }, 100)
     },
     stopBluetoothDevicesDiscovery() {
+      if(this.timer) {
+        clearInterval(this.timer);
+      }
       wx.stopBluetoothDevicesDiscovery({
         complete: () => {
           console.log('stopBluetoothDevicesDiscovery')
@@ -181,45 +205,60 @@ export default {
         }
       })
     },
-    getBluetoothDevices() {
+    scanDevices() {
       this.isScaning = false;
-      setTimeout(() => {
-        wx.getBluetoothDevices({
-          services: [],
-          allowDuplicatesKey: false,
-          interval: 0,
-          success: (res) => {
-            console.log("getBluetoothDevices successful!", res);
-            // if (res.devices.length > 0) {
-            //   if (JSON.stringify(res.devices).indexOf(that.deviceName) !== -1) {
-            //     for (let i = 0; i < res.devices.length; i++) {
-            //       if (that.deviceName === res.devices[i].name) {
-            //         /* 根据指定的蓝牙设备名称匹配到deviceId */
-            //         that.deviceId = that.devices[i].deviceId;
-            //         setTimeout(() => {
-            //           that.connectTO();
-            //         }, 2000);
-            //       };
-            //     };
-            //   } else {
-            //   }
-            // } else {
-            // }
-          },
-          fail: (res) => {
-            this.isScaning = false;
-            console.log(res, '获取蓝牙设备列表失败=====')
-          }
-        })
-      }, 1000)
+      this.getBluetoothDevices();
+      if(this.timer) {
+        clearInterval(this.timer);
+      }
+      this.timer = setInterval(this.getBluetoothDevices, 3000);
+    },
+    getBluetoothDevices() {
+      wx.getBluetoothDevices({
+        services: [],
+        allowDuplicatesKey: false,
+        interval: 0,
+        success: (res) => {
+          // console.log("getBluetoothDevices successful!", res);
+          res.devices.forEach((device, index) => {
+            if (!device.name && !device.localName) {
+              return;
+            }
+            if(device.name !== "Paperang" && device.localName !== "Paperang") {
+              return;
+            }
+            console.log("getBluetoothDevices: ", device, index);
+            let isExist = false;
+            let cnt = -1;
+            this.devices.forEach((item, index) => {
+              if(item.deviceId === device.deviceId) {
+                cnt = index;
+                isExist = true;
+              }
+            })
+            if(!isExist) {
+              this.devices.push(device);
+            } else {
+              // 直接给this.devices[cnt]赋值不会触发v-for刷新
+              this.devices.splice(cnt, 1, device)
+            }
+          })
+        },
+        fail: (res) => {
+          this.isScaning = false;
+          console.log(res, '获取蓝牙设备列表失败=====')
+        }
+      })
     },
     onBluetoothDeviceFound() {
-      this.isScaning = false;
       wx.onBluetoothDeviceFound((res) => {
         // console.log("onBluetoothDeviceFound: ", res);
         res.devices.forEach(device => {
           if (!device.name && !device.localName) {
-            return
+            return;
+          }
+          if(device.name !== "Paperang" && device.localName !== "Paperang") {
+            return;
           }
           console.log("onBluetoothDeviceFound: ", res.devices);
           let isExist = false;
