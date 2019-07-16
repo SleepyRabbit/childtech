@@ -3,7 +3,8 @@
     <!-- <button @tap="addDevice">添加设备</button>
     <button @tap="onRecognize">智能识别</button> -->
     <button @tap="addDevice">1</button>
-    <button @tap="onRecognize">2</button>
+    <button @tap="showMyDevice">2</button>
+    <button @tap="onRecognize">3</button>
   </div>
 </template>
 
@@ -24,6 +25,11 @@ export default {
     addDevice() {
       wx.navigateTo({ 
         url: '/pages/addDevice/main' 
+      });
+    },
+    showMyDevice() {
+      wx.navigateTo({ 
+        url: '/pages/myDevice/main' 
       });
     },
     onRecognize() {
