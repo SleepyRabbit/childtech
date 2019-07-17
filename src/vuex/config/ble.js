@@ -2,15 +2,18 @@
 
 const state = {
   adapterOpened: false,
-  connectedDevice: "",
+  myDevices: [],
 };
 
 const mutations = {
   setAdapterState(state, data) {
     state.adapterOpened = data;
   },
-  setConnectedDevice(state, data) {
-    state.connectedDevice = data;
+  addMyDevice(state, data) {
+    state.myDevices.push(data);
+  },
+  delMyDevice(state, data) {
+    state.myDevices.pop(data);
   },
 };
 
@@ -18,14 +21,17 @@ const actions = {
   setAdapterState: ({commit}, data) => {
     commit('setAdapterState', data);
   },
-  setConnectedDevice: ({commit}, data) => {
-    commit('setConnectedDevice', data);
+  addMyDevice: ({commit}, data) => {
+    commit('addMyDevice', data);
+  },
+  delMyDevice: ({commit}, data) => {
+    commit('delMyDevice', data);
   },
 };
 
 const getters = {
   getAdapterState: (state) => state.adapterOpened,
-  getConnectedDevice: (state) => state.connectedDevice,
+  getMyDevices: (state) => state.myDevices,
 };
 
 export default {

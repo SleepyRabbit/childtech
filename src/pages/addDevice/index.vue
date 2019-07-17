@@ -8,7 +8,7 @@
         <div>{{device.name}}</div>
         <!-- <div>{{device.deviceId}}</div> -->
         <div>{{device.RSSI}}</div>
-        <div v-if="connectedDevice === device.deviceId">已连接</div>
+        <div v-if="connectedDevice.deviceId === device.deviceId">已连接</div>
       </div>
     </scroll-view>
     <button :disabled="sel_index < 0" class="connect" @tap="onConnect">连接</button>
@@ -72,6 +72,7 @@ export default {
   methods: {
     ...mapActions([
       'setAdapterState',
+      'addMyDevice',
     ]),
     init() {
       this.devices = [];
@@ -85,7 +86,7 @@ export default {
     onConnect() {
       let device = this.devices[this.sel_index];
       console.log("onConnect: ", device);
-      this.createBLEConnection(device.deviceId, device.name);
+      this.createBLEConnection(device);
     },
     openBluetoothAdapter() {
       if (!wx.openBluetoothAdapter) {
@@ -136,7 +137,7 @@ export default {
         this.connected = res.connected;
         if (!res.connected) {
           wx.showModal({
-            title: '错误',
+            // title: '错误',
             content: '蓝牙连接已断开',
             showCancel: false
           })
@@ -285,24 +286,25 @@ export default {
         })
       })
     },
-    createBLEConnection(deviceId, name) {
+    createBLEConnection(device) {
       this.isConnecting = true;
       this.stopBluetoothDevicesDiscovery();
       wx.createBLEConnection({
-        deviceId,
+        deviceId: device.deviceId,
         success: (res) => {
           this.isConnecting = false;
           console.log('createBLEConnection success!', res);
           widget.showToast("蓝牙连接成功!");
           this.connected = true;
-          this.connectedDevice = deviceId;
+          this.connectedDevice = device;
+          this.addMyDevice(device);
           setTimeout(() => {
             this.getConnectedBluetoothDevices();
-            this.getBLEDeviceServices(deviceId);
+            this.getBLEDeviceServices(device.deviceId);
           }, 100)
           wx.setStorage({
             key: LAST_CONNECTED_DEVICE,
-            data: name + ':' + deviceId
+            data: device.name + ':' + device.deviceId
           })
         },
         complete: () => {
