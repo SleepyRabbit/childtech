@@ -5,9 +5,11 @@
     <loading v-if="isConnecting">正在连接...</loading>
     <scroll-view class="device-container" scroll-y="true" scroll-with-animation="true" :style="{height: svHeight + 'px'}">
       <div v-for="(device,index) in devices" :key="index" class="device_card" :style="{ backgroundColor: index === sel_index ? '#ccc' : 'white' }" @tap="onSelect(index)">
-        <div>{{device.name}}</div>
+        <!-- <div>{{device.name}}</div> -->
         <!-- <div>{{device.deviceId}}</div> -->
-        <div>{{device.RSSI}}</div>
+        <!-- <div>1号</div> -->
+        <div>秒秒射</div>
+        <div>{{device.RSSI}}db</div>
         <div v-if="connectedDevice.deviceId === device.deviceId">已连接</div>
       </div>
     </scroll-view>
@@ -202,7 +204,7 @@ export default {
       }
       wx.stopBluetoothDevicesDiscovery({
         complete: () => {
-          console.log('stopBluetoothDevicesDiscovery')
+        console.log('stopBluetoothDevicesDiscovery')
           this._discoveryStarted = false
         }
       })
@@ -223,12 +225,18 @@ export default {
         success: (res) => {
           console.log("getBluetoothDevices successful!", res);
           res.devices.forEach((device, index) => {
-            if (!device.name && !device.localName) {
+            if (!device.name && !device.localName || device.name === "未知设备") {
               return;
             }
-            if(device.name !== "Paperang" && device.localName !== "Paperang") {
+            // if(device.name !== "Heart Rate Sensor" && device.localName !== "Heart Rate Sensor") {
+            //   return;
+            // }
+            if(device.name !== "SimpleBLEPeripheral" && device.localName !== "SimpleBLEPeripheral") {
               return;
             }
+            // if(device.name !== "Paperang" && device.localName !== "Paperang") {
+            //   return;
+            // }
             console.log("getBluetoothDevices: ", device, index);
             if(device.RSSI === 0) {
               return;

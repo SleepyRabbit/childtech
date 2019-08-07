@@ -2,13 +2,12 @@
   <div class="page-root">
     <scroll-view class="device-container" scroll-y="true" scroll-with-animation="true" :style="{height: svHeight + 'px'}">
       <div v-for="(device,index) in getMyDevices" :key="index" class="device_card" :style="{ backgroundColor: index === sel_index ? '#ccc' : 'white' }" @tap="onSelect(index)">
-        <div>{{device.name}}</div>
+        <div>1号</div>
+        <!-- <div>{{device.name}}</div> -->
         <!-- <div>{{device.deviceId}}</div> -->
-        <div>{{device.RSSI}}</div>
-        <!-- <div v-if="connectedDevice.deviceId === device.deviceId">已连接</div> -->
+        <!-- <div>{{device.RSSI}}</div> -->
       </div>
     </scroll-view>
-    <button :disabled="sel_index < 0" class="connect" @tap="onDisconnect">断开连接</button>
   </div>
 </template>
 
@@ -57,8 +56,7 @@ export default {
       this.sel_index = -1;
     },
     onSelect(index) {
-      console.log("onSelect: ", index);
-      this.sel_index = index;
+      wx.navigateTo({ url: 'url' });
     },
     onDisconnect() {
       let device = this.getMyDevices[this.sel_index];

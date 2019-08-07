@@ -11,8 +11,8 @@
 	},
 	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
-	"appid": "wxd9dd7a39008b6d48",
-	"projectname": "childtech",
+	"appid": "wx48dfce003e4f488c",
+	"projectname": "4U",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
 	"condition": {
